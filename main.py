@@ -82,9 +82,11 @@ if __name__ == '__main__':
     optimizer = optim.Adam(net.parameters(), lr=args['lr'], weight_decay=args['weight_decay'])
 
     # --- Metrics ---
+    save_dir = os.path.join("results", f"{args.dataset-args}.{args.spurious_strength}-{args.architecture}-{args.pretrained}")
+    os.makedirs(save_dir, exist_ok=True)
     logger = LOGGER(["Train Accuracy", "Train Minority Accuracy", "Train Majority Accuracy", "Train Loss",
                      "Train Minority Loss", "Train Majority Loss", "Val Accuracy", "Val Minority Accuracy",
-                     "Val Majority Accuracy"])
+                     "Val Majority Accuracy"], save_dir)
 
     # --- Training Loop ---
     for epoch in range(n_epoch):
@@ -128,3 +130,7 @@ if __name__ == '__main__':
         logger.log({"Val Accuracy": val_acc/len(loader_tr),
                    "Val Minority Accuracy": val_minority_acc/len(loader_tr),
                    "Val Majority Accuracy": val_majority_acc/len(loader_tr)})
+        logger.print(epoch+1)
+
+    logger.save()
+    logger.plot()
