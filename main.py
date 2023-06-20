@@ -13,8 +13,7 @@ import numpy as np
 
 from data.mcdominoes import get_mcdominoes, MCDOMINOES
 from data.celeba import get_celeba, CELEBA
-from data.data_log import log_data
-
+from data.logger import log_data, LOGGER
 
 
 if __name__ == '__main__':
@@ -83,15 +82,9 @@ if __name__ == '__main__':
     optimizer = optim.Adam(net.parameters(), lr=args['lr'], weight_decay=args['weight_decay'])
 
     # --- Metrics ---
-    wandb.login()
-    run = wandb.init(
-        project="SpuriousDynamics",
-        # Track hyperparameters and run metadata
-        config={
-            "Architecture": args.architecture,
-            "Dataset": args.dataset,
-            "Spurious Strength": args.spurious_strength
-        })
+    logger = LOGGER(["Train Accuracy", "Train Minority Accuracy", "Train Majority Accuracy", "Train Loss",
+                     "Train Minority Loss", "Train Majority Loss", "Val Accuracy", "Val Minority Accuracy",
+                     "Val Majority Accuracy"])
 
     # --- Training Loop ---
     for epoch in range(n_epoch):
@@ -115,7 +108,7 @@ if __name__ == '__main__':
             train_minority_loss += torch.sum(loss[y != p]).item()
             train_majority_loss += torch.sum(loss[y == p]).item()
 
-        wandb.log({"Train Accuracy": train_acc/len(loader_tr),
+        logger.log({"Train Accuracy": train_acc/len(loader_tr),
                    "Train Minority Accuracy": train_minority_acc/len(loader_tr),
                    "Train Majority Accuracy": train_majority_acc/len(loader_tr),
                    "Train Loss": train_loss/len(loader_tr),
@@ -132,6 +125,6 @@ if __name__ == '__main__':
             val_acc += torch.sum((torch.max(out, 1)[1] == y).float()).data.item()
             val_minority_acc += torch.sum((torch.max(out[y != p], 1)[1] == y[y != p]).float()).data.item()
             val_majority_acc += torch.sum((torch.max(out[y == p], 1)[1] == y[y == p]).float()).data.item()
-        wandb.log({"Val Accuracy": val_acc/len(loader_tr),
+        logger.log({"Val Accuracy": val_acc/len(loader_tr),
                    "Val Minority Accuracy": val_minority_acc/len(loader_tr),
                    "Val Majority Accuracy": val_majority_acc/len(loader_tr)})

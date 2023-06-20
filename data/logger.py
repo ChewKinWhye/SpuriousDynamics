@@ -3,6 +3,18 @@ import torch
 import os
 
 
+class LOGGER:
+    def __init__(self, metrics):
+        self.metrics = metrics
+        self.logger = {}
+        for metric in self.metrics:
+            self.logger[metric] = []
+
+    def log(self, metric_values):
+        for metric, value in metric_values:
+            self.logger[metric].append(value)
+
+
 def log_data(x, y, p, handler, dataset_name, dataset_split):
     base_dir = os.path.join("data", dataset_name)
     os.makedirs(base_dir, exist_ok=True)
